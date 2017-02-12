@@ -1,0 +1,17 @@
+{
+  "name": "resting",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Mauricio Banduk",
+  "license": "MIT",
+  "dependencies": {
+    "bunyan": "^1.8.5",
+    "bunyan-logstash": "^0.3.4",
+    "config": "^1.25.1",
+    "dotenv": "^4.0.0",
+    "joi": "^10.2.2",
+    "koa": "^1.2.5",
+    "koa-bodyparser": "^2.3.0",
+    "koa-router": "^5.4.0"
+  }
+}
