@@ -19,5 +19,8 @@ module.exports = {
       path: defer((cfg) => `/tmp/${cfg.app.name}-${process.env.NODE_ENV}.log`),
       src: true,
     }
+  },
+  doc: {
+    outputFile: './doc/api.md',
   }
 }

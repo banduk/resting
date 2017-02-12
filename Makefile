@@ -7,4 +7,4 @@ setup: setup-hooks
 	@yarn
 
 start:
-	@node index.js | ./node_modules/.bin/bunyan -o short
+	@./node_modules/.bin/nodemon index.js | ./node_modules/.bin/bunyan -o short

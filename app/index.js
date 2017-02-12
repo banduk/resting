@@ -1,24 +1,37 @@
 const koa = require('koa')
+const router = require('koa-router')
 const config = require('config')
-
 const bunyan = require('bunyan')
 const bunyanLogstash = require('bunyan-logstash')
+const bodyParser = require('koa-bodyparser')
+const errors = require('boom')
+
+const routes = require('./routes')
+const controllers = require('./controllers')
+const validators = require('./validators')
+const serializers = require('./serializers')
+const autoDoc = require('./autodoc')
 
 class App {
   constructor() {
     this.app = koa()
+    this.router = router()
+    this.routes = routes
   }
 
   start() {
     this.app.listen(this.port, () => {
-      this.log.info(`${this.name} listening on port ${this.port}`)
+      this.app.log.info(`${this.name} listening on port ${this.port}`)
     })
   }
 
   configure() {
+    this.app.config = config
     this.port = config.get('app.port')
     this.name = config.get('app.name')
-    this.log = this.configureLog()
+    this.app.log = this.configureLog()
+    this.configureRoutes()
+    this.configureMiddlewares()
   }
 
   configureLog() {
@@ -58,11 +71,45 @@ class App {
 
     return bunyan.createLogger({
       name: config.get('app.name'),
-      environment: process.env.NODE_ENV,
+      environment: this.app.env,
       streams,
       serializers: { err: bunyan.stdSerializers.err },
     })
+  }
 
+  configureMiddlewares() {
+    this.app.use(bodyParser({
+      extendTypes: {
+        json: ['*/*', '*'] // handle everythong as json
+      },
+      enableTypes: ['json'],
+      onerror(err) {
+        throw errors.badData('Only json is accepted')
+      },
+    }))
+    this.app.use(autoDoc(this.app, this.router))
+
+    this.router.use(
+      serializers.serializer,
+      validators.validator
+    )
+
+    this.app.use(this.router.routes())
+    this.app.use(this.router.allowedMethods({
+      throw: true,
+      notImplemented: errors.notImplemented(),
+      methodNotAllowed: errors.methodNotAllowed(),
+    }))
+  }
+
+  configureRoutes() {
+    Object.keys(this.routes).forEach(resource => {
+      Object.keys(this.routes[resource]).forEach(action => {
+        const method = this.routes[resource][action][0].toLowerCase()
+        const route = this.routes[resource][action][1]
+        this.router[method](`${resource}.${action}`, route, controllers[resource][action])
+      })
+    })
   }
 }
 

@@ -6,10 +6,10 @@ module.exports = {
     port: 3000,
   },
   log: {
-    level: 'debug',
+    level: 'info',
     src: false,
     stdout: {
-      level: 'info'
+      level: 'debug'
     },
     logstash: {
       host: '127.0.0.1',
@@ -19,5 +19,8 @@ module.exports = {
       path: defer((cfg) => `/tmp/${cfg.app.name}-${process.env.NODE_ENV}.log`),
       src: true,
     }
+  },
+  doc: {
+    outputFile: './doc/api.md',
   }
 }
